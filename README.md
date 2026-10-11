@@ -49,7 +49,7 @@ DATA_DIR=./data PORT=3000 node server.js
 ## Triển khai lên Coolify
 
 1. Đẩy thư mục này lên một Git repo (GitHub).
-2. Trong Coolify: tạo ứng dụng mới từ repo, chọn build bằng Dockerfile (hoặc Docker Compose với `docker-compose.yml` sẵn có).
+2. Trong Coolify: tạo ứng dụng mới từ repo, chọn build bằng Dockerfile (hoặc Docker Compose với `docker-compose.yaml` sẵn có).
 3. Khai báo các biến môi trường như bảng trên trong phần Environment của Coolify; đặt tên miền `qlgpbc.vtcdigital.top` cho ứng dụng.
 4. Nếu AI gateway chạy ở service khác, áp dụng một trong hai ví dụ trong `deploy/` để chia đường dẫn `/ai`.
 
