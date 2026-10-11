@@ -1,0 +1,37 @@
+# Ví dụ cấu hình Cloudflare Tunnel (cloudflared) cho tên miền qlgpbc.vtcdigital.top
+#
+# Mô hình: MỘT tên miền duy nhất, chia theo đường dẫn:
+#   - https://qlgpbc.vtcdigital.top/ai/*  -> AI gateway (tự host, ví dụ chạy ở localhost:8080)
+#   - https://qlgpbc.vtcdigital.top/*     -> ứng dụng QLGP Báo Chí (Docker, localhost:3000)
+#
+# Lưu ý về tiền tố /ai: cloudflared KHÔNG tự cắt tiền tố khi chuyển tiếp.
+# Vì vậy địa chỉ gateway mà ứng dụng QLGP gọi tới nên là đường dẫn gốc của gateway
+# (ví dụ http://localhost:8080) nếu gateway và ứng dụng liên lạc nội bộ, hoặc giữ
+# nguyên /ai nếu gateway của bạn được cấu hình phục vụ dưới tiền tố /ai.
+# Cách khuyến nghị khi mọi thứ cùng một máy: trong Cài đặt AI Gateway của ứng dụng,
+# đặt base URL là http://<tên-service-gateway>:<cổng> (nội bộ Docker) — khi đó
+# luật /ai dưới đây chỉ phục vụ việc truy cập gateway từ bên ngoài nếu cần.
+#
+# Cách dùng:
+#   1) cloudflared tunnel create qlgpbc
+#   2) Thay <TUNNEL_ID> và đường dẫn credentials-file bằng giá trị thật.
+#   3) cloudflared tunnel route dns qlgpbc qlgpbc.vtcdigital.top
+#   4) cloudflared tunnel run qlgpbc  (hoặc cài làm service)
+
+tunnel: <TUNNEL_ID>
+credentials-file: /etc/cloudflared/<TUNNEL_ID>.json
+
+ingress:
+  # AI gateway tại đường dẫn /ai — PHẢI đặt trước luật mặc định
+  - hostname: qlgpbc.vtcdigital.top
+    path: ^/ai(/.*)?$
+    service: http://localhost:8080   # <-- địa chỉ AI gateway tự host của bạn
+    originRequest:
+      noTLSVerify: false
+
+  # Toàn bộ còn lại -> ứng dụng QLGP Báo Chí
+  - hostname: qlgpbc.vtcdigital.top
+    service: http://localhost:3000   # <-- cổng ứng dụng (khớp PORT trong .env)
+
+  # Bắt buộc có luật cuối
+  - service: http_status:404

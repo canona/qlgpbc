@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    image: qlgp-bao-chi:latest
+    container_name: qlgp-bao-chi
+    restart: unless-stopped
+    # Cổng host lấy từ biến PORT trong .env (mặc định 3000), cổng trong container luôn là 3000
+    ports:
+      - "${PORT:-3000}:3000"
+    env_file:
+      - .env
+    environment:
+      PORT: "3000"
+      DATA_DIR: /app/data
+    volumes:
+      # Volume chứa store.json (dữ liệu) + uploads/ (PDF gốc) — bền vững qua các lần deploy
+      - qlgp-data:/app/data
+
+volumes:
+  qlgp-data:
+    name: qlgp-data

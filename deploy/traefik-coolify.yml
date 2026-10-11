@@ -1,0 +1,80 @@
+# Chia đường dẫn trên cùng tên miền bằng Traefik (Coolify)
+#
+# Mục tiêu:
+#   - https://qlgpbc.vtcdigital.top/       -> container ứng dụng QLGP Báo Chí (service "app", cổng 3000)
+#   - https://qlgpbc.vtcdigital.top/ai/*   -> container AI gateway; tiền tố /ai bị CẮT
+#     trước khi chuyển tiếp (middleware stripPrefix), nên gateway nhận đường dẫn gốc,
+#     ví dụ /ai/v1/chat/completions -> /v1/chat/completions.
+#
+# Khi đó, trong trang "Cài đặt AI Gateway" của ứng dụng (hoặc biến AI_GATEWAY_URL),
+# đặt base URL là: https://qlgpbc.vtcdigital.top/ai
+#
+# ============================================================
+# Cách 1 (khuyến nghị trên Coolify): dùng Docker labels
+# ------------------------------------------------------------
+# Coolify tự gắn label cho ứng dụng chính (app). Với AI gateway chạy như một
+# service riêng trong cùng project/docker-compose, thêm các label sau vào
+# service của gateway (thay "gateway" bằng tên service thật, cổng 8080 là ví dụ):
+#
+#   gateway:
+#     image: <anh-gateway-cua-ban>
+#     labels:
+#       - "traefik.enable=true"
+#       # Router chỉ khớp tên miền + tiền tố /ai, ưu tiên cao hơn router của app
+#       - "traefik.http.routers.qlgp-ai.rule=Host(`qlgpbc.vtcdigital.top`) && PathPrefix(`/ai`)"
+#       - "traefik.http.routers.qlgp-ai.priority=100"
+#       - "traefik.http.routers.qlgp-ai.entrypoints=https"
+#       - "traefik.http.routers.qlgp-ai.tls=true"
+#       - "traefik.http.routers.qlgp-ai.tls.certresolver=letsencrypt"
+#       - "traefik.http.routers.qlgp-ai.middlewares=qlgp-strip-ai"
+#       - "traefik.http.middlewares.qlgp-strip-ai.stripprefix.prefixes=/ai"
+#       - "traefik.http.services.qlgp-ai.loadbalancer.server.port=8080"
+#
+# Router của ứng dụng chính (Coolify mặc định tạo với rule Host(`qlgpbc.vtcdigital.top`))
+# nên đặt priority thấp hơn (mặc định Traefik tính theo độ dài rule; đặt tường minh
+# priority=10 cho router của app nếu thấy /ai bị app nuốt).
+#
+# ============================================================
+# Cách 2: file dynamic config của Traefik (nếu bạn tự quản Traefik)
+# ------------------------------------------------------------
+# Đặt file này vào thư mục dynamic config (ví dụ /data/coolify/proxy/dynamic/
+# trên máy chạy Coolify, hoặc thư mục được khai báo trong --providers.file).
+
+http:
+  routers:
+    qlgp-ai:
+      rule: "Host(`qlgpbc.vtcdigital.top`) && PathPrefix(`/ai`)"
+      priority: 100
+      entryPoints:
+        - https
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - strip-ai
+      service: ai-gateway
+
+    qlgp-app:
+      rule: "Host(`qlgpbc.vtcdigital.top`)"
+      priority: 10
+      entryPoints:
+        - https
+      tls:
+        certResolver: letsencrypt
+      service: qlgp-app
+
+  middlewares:
+    strip-ai:
+      stripPrefix:
+        prefixes:
+          - "/ai"
+
+  services:
+    ai-gateway:
+      loadBalancer:
+        servers:
+          - url: "http://gateway:8080"   # tên service/cổng của AI gateway trong mạng Docker
+
+    qlgp-app:
+      loadBalancer:
+        servers:
+          - url: "http://app:3000"       # service ứng dụng QLGP Báo Chí
