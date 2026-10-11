@@ -2,7 +2,7 @@
 #
 # Mô hình: MỘT tên miền duy nhất, chia theo đường dẫn:
 #   - https://qlgpbc.vtcdigital.top/ai/*  -> AI gateway (tự host, ví dụ chạy ở localhost:8080)
-#   - https://qlgpbc.vtcdigital.top/*     -> ứng dụng QLGP Báo Chí (Docker, localhost:3000)
+#   - https://qlgpbc.vtcdigital.top/*     -> ứng dụng QLGP Báo Chí (Docker, cổng host localhost:18080)
 #
 # Lưu ý về tiền tố /ai: cloudflared KHÔNG tự cắt tiền tố khi chuyển tiếp.
 # Vì vậy địa chỉ gateway mà ứng dụng QLGP gọi tới nên là đường dẫn gốc của gateway
@@ -30,8 +30,11 @@ ingress:
       noTLSVerify: false
 
   # Toàn bộ còn lại -> ứng dụng QLGP Báo Chí
+  # cloudflared chạy trên máy chủ (host) nên phải trỏ vào CỔNG HOST 18080
+  # (biến HOST_PORT trong .env). Cổng 3000 chỉ tồn tại bên trong container,
+  # cloudflared không tới được — trỏ vào 3000 sẽ lỗi 502.
   - hostname: qlgpbc.vtcdigital.top
-    service: http://localhost:3000   # <-- cổng ứng dụng (khớp PORT trong .env)
+    service: http://localhost:18080   # <-- cổng host của ứng dụng (HOST_PORT, mặc định 18080)
 
   # Bắt buộc có luật cuối
   - service: http_status:404

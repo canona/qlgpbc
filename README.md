@@ -12,7 +12,7 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Mở trình duyệt tại `http://localhost:3000` (hoặc cổng đã đặt trong `.env`).
+Mở trình duyệt tại `http://localhost:18080` (cổng host mặc định, đổi được qua biến `HOST_PORT` trong `.env`).
 
 ## Chạy trực tiếp bằng Node (không Docker)
 
@@ -27,7 +27,7 @@ DATA_DIR=./data PORT=3000 node server.js
 
 | Biến | Mặc định | Ý nghĩa |
 |---|---|---|
-| `PORT` | `3000` | Cổng HTTP của ứng dụng |
+| `HOST_PORT` | `18080` | Cổng HTTP phía host (tránh xung đột); cổng trong container luôn là 3000 |
 | `APP_BASE_URL` | `https://qlgpbc.vtcdigital.top` | Địa chỉ công khai, dùng hiển thị ví dụ API trong trang Hàng đợi |
 | `AI_GATEWAY_URL` | `https://qlgpbc.vtcdigital.top/ai` | Địa chỉ AI gateway tương thích OpenAI (có thể cấu hình lại trong trang Cài đặt) |
 | `AI_GATEWAY_API_KEY` | _(trống)_ | API key của gateway (hoặc nhập trong trang Cài đặt — key lưu phía server, chỉ hiển thị dạng che) |

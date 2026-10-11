@@ -4,9 +4,10 @@ services:
     image: qlgp-bao-chi:latest
     container_name: qlgp-bao-chi
     restart: unless-stopped
-    # Cổng host lấy từ biến PORT trong .env (mặc định 3000), cổng trong container luôn là 3000
+    # Cổng host lấy từ biến HOST_PORT trong .env (mặc định 18080 — chọn cổng ít dùng để tránh
+    # xung đột với các dịch vụ sẵn có trên máy chủ), cổng trong container luôn là 3000
     ports:
-      - "${PORT:-3000}:3000"
+      - "${HOST_PORT:-18080}:3000"
     env_file:
       - .env
     environment:
