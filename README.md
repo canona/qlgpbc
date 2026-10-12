@@ -2,6 +2,8 @@
 
 Ứng dụng web quản lý hồ sơ giấy phép báo chí: tải PDF giấy phép lên, trích xuất thông tin thành bản ghi có cấu trúc, hiển thị dạng bảng, tìm kiếm theo cơ quan và các trường liên quan. Kèm API hàng đợi cho ứng dụng thứ ba (gửi PDF → nhận `job_id` → tra kết quả trích xuất) và tích hợp AI gateway tự host cho các PDF dạng scan.
 
+Ngoài tải file trực tiếp, trang "Tải PDF lên" và API còn hỗ trợ **nhập từ Google Drive**: dán link chia sẻ của file PDF, máy chủ tự tải về và trích xuất (file phải được chia sẻ ở chế độ "Bất kỳ ai có liên kết đều xem được"). Endpoint API: `POST /api/extraction-jobs/from-drive` với body JSON `{"url": "<link Drive>"}`.
+
 Ứng dụng viết bằng Node.js thuần (không phụ thuộc thư viện ngoài), dữ liệu lưu trong một file JSON (`store.json`) + thư mục `uploads/` chứa PDF gốc, tất cả nằm trong thư mục dữ liệu (Docker volume) nên sao lưu rất đơn giản.
 
 ## Chạy bằng Docker Compose (khuyến nghị — đúng cách triển khai lên Coolify)
@@ -42,6 +44,7 @@ DATA_DIR=./data PORT=3000 node server.js
 - `lib/routes-pages.js` — giao diện quản trị (Hồ sơ giấy phép / Hàng đợi API / Cài đặt AI Gateway).
 - `lib/routes-api.js` — API JSON: `/api/licenses`, `/api/licenses/import`, `/api/licenses/extract`, `/api/extraction-jobs`, `/api/settings/ai`, `/api/stats`.
 - `lib/worker.js` — worker nền xử lý hàng đợi mỗi 60 giây: ưu tiên lớp text của PDF (miễn phí, qua `pdftotext`), chỉ PDF scan mới gọi AI gateway; khử trùng lặp theo SHA-256 tại endpoint tiếp nhận.
+- `lib/drive.js` — tải PDF từ Google Drive theo link chia sẻ công khai (tự dựng URL tải từ file ID, kiểm tra chữ ký PDF, giới hạn 30 MB).
 - `lib/parse.js` — phân tích văn bản giấy phép thành các trường bằng luật + ánh xạ JSON trích xuất bên ngoài (định dạng PascalCase 39 trường).
 - `lib/store.js` — tầng dữ liệu JSON (ghi nguyên tử).
 - `deploy/` — ví dụ chia đường dẫn trên cùng tên miền `qlgpbc.vtcdigital.top`: ứng dụng ở `/`, AI gateway ở `/ai/` — cho Cloudflare Tunnel (`cloudflared-config.yml`) và cho Traefik/Coolify (`traefik-coolify.yml`, có cắt tiền tố `/ai` trước khi chuyển tiếp).
