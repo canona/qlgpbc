@@ -1,8 +1,10 @@
 FROM node:20-slim
 
-# poppler-utils cung cấp pdftotext / pdfinfo / pdftoppm cho trích xuất PDF
+# poppler-utils cung cấp pdftotext / pdfinfo / pdftoppm cho trích xuất PDF.
+# tesseract-ocr + tesseract-ocr-vie: OCR offline tiếng Việt cho PDF scan
+# (nhánh 1.5 của worker — không cần AI gateway / API key).
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends poppler-utils ca-certificates \
+  && apt-get install -y --no-install-recommends poppler-utils ca-certificates tesseract-ocr tesseract-ocr-vie \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

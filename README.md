@@ -35,7 +35,10 @@ DATA_DIR=./data PORT=3000 node server.js
 | `AI_GATEWAY_API_KEY` | _(trống)_ | API key của gateway (hoặc nhập trong trang Cài đặt — key lưu phía server, chỉ hiển thị dạng che) |
 | `AI_GATEWAY_MODEL` | _(trống)_ | Model dùng cho trích xuất OCR/LLM |
 | `DATA_DIR` | `/app/data` (trong Docker) | Thư mục chứa `store.json` và `uploads/` |
-| `MAX_OCR_PAGES` | `10` | Giới hạn số trang đưa qua gateway cho mỗi job (giảm chi phí token) |
+| `MAX_OCR_PAGES` | `10` | Giới hạn số trang OCR (offline hoặc qua gateway) cho mỗi job |
+| `OCR_OFFLINE` | `on` | Đặt `off` để tắt OCR offline (Tesseract) cho PDF scan — khi đó PDF scan chỉ còn nhánh AI gateway như trước |
+| `OCR_DPI` | `300` | Độ phân giải render trang khi OCR offline |
+| `OCR_LANGS` | `vie+eng` | Ngôn ngữ Tesseract khi OCR offline |
 | `WORKER_INTERVAL_SECONDS` | `60` | Chu kỳ worker quét hàng đợi trích xuất |
 
 ## Kiến trúc ngắn gọn
@@ -43,7 +46,8 @@ DATA_DIR=./data PORT=3000 node server.js
 - `server.js` — máy chủ HTTP, điều phối route.
 - `lib/routes-pages.js` — giao diện quản trị (Hồ sơ giấy phép / Hàng đợi API / Cài đặt AI Gateway).
 - `lib/routes-api.js` — API JSON: `/api/licenses`, `/api/licenses/import`, `/api/licenses/extract`, `/api/extraction-jobs`, `/api/settings/ai`, `/api/stats`.
-- `lib/worker.js` — worker nền xử lý hàng đợi mỗi 60 giây: ưu tiên lớp text của PDF (miễn phí, qua `pdftotext`), chỉ PDF scan mới gọi AI gateway; khử trùng lặp theo SHA-256 tại endpoint tiếp nhận.
+- `lib/worker.js` — worker nền xử lý hàng đợi mỗi 60 giây: ưu tiên lớp text của PDF (miễn phí, qua `pdftotext`); PDF scan được OCR offline bằng Tesseract (xem `lib/ocr.js`), chỉ khi OCR offline không dùng được mới gọi AI gateway; khử trùng lặp theo SHA-256 tại endpoint tiếp nhận.
+- `lib/ocr.js` — OCR offline bằng Tesseract tiếng Việt trong container: render trang 300 DPI → `tesseract -l vie+eng` → text thô cho `lib/parse.js`. Không cần API key, không gọi dịch vụ online.
 - `lib/drive.js` — tải PDF từ Google Drive theo link chia sẻ công khai (tự dựng URL tải từ file ID, kiểm tra chữ ký PDF, giới hạn 30 MB).
 - `lib/parse.js` — phân tích văn bản giấy phép thành các trường bằng luật + ánh xạ JSON trích xuất bên ngoài (định dạng PascalCase 39 trường).
 - `lib/store.js` — tầng dữ liệu JSON (ghi nguyên tử).
