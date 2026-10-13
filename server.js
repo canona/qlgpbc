@@ -21,7 +21,7 @@ async function dispatch(req, res) {
   try {
     if (url.pathname === '/style.css' && req.method === 'GET') {
       const css = fs.readFileSync(STYLE_CSS);
-      res.writeHead(200, { 'Content-Type': 'text/css; charset=utf-8', 'Content-Length': css.length });
+      res.writeHead(200, { 'Content-Type': 'text/css; charset=utf-8', 'Content-Length': css.length, 'Cache-Control': 'public, max-age=0, must-revalidate' });
       res.end(css);
       return;
     }
