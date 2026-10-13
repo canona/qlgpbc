@@ -8,7 +8,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const store = require('./lib/store');
-const { handleApi, handleFileDownload } = require('./lib/routes-api');
+const { handleApi, handleFileDownload, handleFilePreview } = require('./lib/routes-api');
 const { handlePages } = require('./lib/routes-pages');
 const worker = require('./lib/worker');
 const { sendJson } = require('./lib/util');
@@ -35,6 +35,9 @@ async function dispatch(req, res) {
     }
     if (url.pathname.startsWith('/files/')) {
       if (handleFileDownload(req, res, url)) return;
+    }
+    if (url.pathname.startsWith('/preview/')) {
+      if (await handleFilePreview(req, res, url)) return;
     }
     if (await handlePages(req, res, url)) return;
     sendJson(res, 404, { error: 'Không tìm thấy đường dẫn' });

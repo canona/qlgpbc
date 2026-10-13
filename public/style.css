@@ -94,11 +94,12 @@ h2 { font-size: 19px; margin: 4px 0 10px; }
 .badge-done { background: #dcfce7; color: #166534; }
 .badge-error { background: #fee2e2; color: #991b1b; }
 
-/* Màn hình duyệt: PDF gốc cạnh cột trường để đối chiếu */
+/* Màn hình duyệt: PDF gốc cạnh cột trường để đối chiếu (PDF rộng hơn, 55/45) */
 .review-layout { display: flex; gap: 16px; align-items: flex-start; }
-.review-main { flex: 1 1 50%; min-width: 0; }
+.review-main { flex: 1 1 45%; min-width: 0; }
 .pdf-pane {
-  flex: 1 1 50%; min-width: 0; position: sticky; top: 16px;
+  flex: 1 1 55%; min-width: 0; position: sticky; top: 16px;
+  max-height: calc(100vh - 32px); overflow-y: auto;
   background: #fff; border: 1px solid #dde4ea; border-radius: 10px; padding: 12px;
 }
 .pdf-pane-head {
@@ -107,9 +108,11 @@ h2 { font-size: 19px; margin: 4px 0 10px; }
 }
 .pdf-pane-head a { white-space: nowrap; font-weight: 500; }
 .pdf-frame { display: block; width: 100%; height: 80vh; border: 1px solid #dde4ea; border-radius: 8px; background: #f7fafc; }
+/* Ảnh xem trước từng trang (server render) thay cho trình xem PDF của trình duyệt */
+.pdf-page-img { width: 100%; height: auto; display: block; margin: 0 0 10px; border: 1px solid #dde4ea; background: #fff; }
 @media (max-width: 900px) {
   .review-layout { flex-direction: column; }
-  .pdf-pane { position: static; width: 100%; flex: none; }
+  .pdf-pane { position: static; width: 100%; flex: none; max-height: none; overflow-y: visible; }
   .review-main { width: 100%; flex: none; }
   .pdf-frame { height: 70vh; }
 }
