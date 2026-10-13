@@ -94,6 +94,26 @@ h2 { font-size: 19px; margin: 4px 0 10px; }
 .badge-done { background: #dcfce7; color: #166534; }
 .badge-error { background: #fee2e2; color: #991b1b; }
 
+/* Màn hình duyệt: PDF gốc cạnh cột trường để đối chiếu */
+.review-layout { display: flex; gap: 16px; align-items: flex-start; }
+.review-main { flex: 1 1 50%; min-width: 0; }
+.pdf-pane {
+  flex: 1 1 50%; min-width: 0; position: sticky; top: 16px;
+  background: #fff; border: 1px solid #dde4ea; border-radius: 10px; padding: 12px;
+}
+.pdf-pane-head {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  font-weight: 600; font-size: 14px; margin-bottom: 8px;
+}
+.pdf-pane-head a { white-space: nowrap; font-weight: 500; }
+.pdf-frame { display: block; width: 100%; height: 80vh; border: 1px solid #dde4ea; border-radius: 8px; background: #f7fafc; }
+@media (max-width: 900px) {
+  .review-layout { flex-direction: column; }
+  .pdf-pane { position: static; width: 100%; flex: none; }
+  .review-main { width: 100%; flex: none; }
+  .pdf-frame { height: 70vh; }
+}
+
 .code, .rawtext {
   background: #0f2237; color: #d7e7f5; padding: 14px; border-radius: 8px;
   overflow-x: auto; font-size: 13px; white-space: pre-wrap; word-break: break-word;
